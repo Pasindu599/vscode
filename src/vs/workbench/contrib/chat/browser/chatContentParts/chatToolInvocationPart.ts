@@ -21,7 +21,7 @@ import { IChatMarkdownContent, IChatProgressMessage, IChatTerminalToolInvocation
 import { IChatRendererContent } from '../../common/chatViewModel.js';
 import { CodeBlockModelCollection } from '../../common/codeBlockModelCollection.js';
 import { IToolResult } from '../../common/languageModelToolsService.js';
-import { CancelChatActionId } from '../actions/chatExecuteActions.js';
+// import { CancelChatActionId } from '../actions/chatExecuteActions.js';
 import { AcceptToolConfirmationActionId } from '../actions/chatToolActions.js';
 import { ChatTreeItem, IChatCodeBlockInfo } from '../chat.js';
 import { ICodeBlockRenderOptions } from '../codeBlockPart.js';
@@ -162,8 +162,8 @@ class ChatToolInvocationSubPart extends Disposable {
 		const continueKeybinding = this.keybindingService.lookupKeybinding(AcceptToolConfirmationActionId)?.getLabel();
 		const continueTooltip = continueKeybinding ? `${continueLabel} (${continueKeybinding})` : continueLabel;
 		const cancelLabel = localize('cancel', "Cancel");
-		const cancelKeybinding = this.keybindingService.lookupKeybinding(CancelChatActionId)?.getLabel();
-		const cancelTooltip = cancelKeybinding ? `${cancelLabel} (${cancelKeybinding})` : cancelLabel;
+		// const cancelKeybinding = this.keybindingService.lookupKeybinding(CancelChatActionId)?.getLabel();
+		// const cancelTooltip = cancelKeybinding ? `${cancelLabel} (${cancelKeybinding})` : cancelLabel;
 
 		const buttons: IChatConfirmationButton[] = [
 			{
@@ -174,8 +174,7 @@ class ChatToolInvocationSubPart extends Disposable {
 			{
 				label: cancelLabel,
 				data: false,
-				isSecondary: true,
-				tooltip: cancelTooltip
+				isSecondary: true
 			}];
 		let confirmWidget: ChatConfirmationWidget | ChatCustomConfirmationWidget;
 		if (typeof message === 'string') {
@@ -228,8 +227,8 @@ class ChatToolInvocationSubPart extends Disposable {
 		const continueKeybinding = this.keybindingService.lookupKeybinding(AcceptToolConfirmationActionId)?.getLabel();
 		const continueTooltip = continueKeybinding ? `${continueLabel} (${continueKeybinding})` : continueLabel;
 		const cancelLabel = localize('cancel', "Cancel");
-		const cancelKeybinding = this.keybindingService.lookupKeybinding(CancelChatActionId)?.getLabel();
-		const cancelTooltip = cancelKeybinding ? `${cancelLabel} (${cancelKeybinding})` : cancelLabel;
+		// const cancelKeybinding = this.keybindingService.lookupKeybinding(CancelChatActionId)?.getLabel();
+		// const cancelTooltip = cancelKeybinding ? `${cancelLabel} (${cancelKeybinding})` : cancelLabel;
 
 		const buttons: IChatConfirmationButton[] = [
 			{
@@ -240,8 +239,7 @@ class ChatToolInvocationSubPart extends Disposable {
 			{
 				label: cancelLabel,
 				data: false,
-				isSecondary: true,
-				tooltip: cancelTooltip
+				isSecondary: true
 			}];
 		const renderedMessage = this._register(this.renderer.render(
 			typeof message === 'string' ? new MarkdownString(message) : message,
