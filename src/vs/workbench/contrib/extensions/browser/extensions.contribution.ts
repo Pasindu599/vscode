@@ -106,22 +106,6 @@ Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane
 		new SyncDescriptor(ExtensionsInput)
 	]);
 
-Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry).registerViewContainer(
-	{
-		id: VIEWLET_ID,
-		title: localize2('extensions', "Extensions"),
-		openCommandActionDescriptor: {
-			id: VIEWLET_ID,
-			mnemonicTitle: localize({ key: 'miViewExtensions', comment: ['&& denotes a mnemonic'] }, "E&&xtensions"),
-			keybindings: { primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyX },
-			order: 4,
-		},
-		ctorDescriptor: new SyncDescriptor(ExtensionsViewPaneContainer),
-		icon: extensionsViewIcon,
-		order: 4,
-		rejectAddedViews: true,
-		alwaysUseContainerInfo: true,
-	}, ViewContainerLocation.Sidebar);
 
 Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
 	.registerConfiguration({
