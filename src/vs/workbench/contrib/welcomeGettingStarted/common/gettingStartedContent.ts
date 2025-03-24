@@ -120,6 +120,17 @@ export const startEntries: GettingStartedStartEntryContent = [
 		}
 	},
 	{
+		id: 'welcome.openMicroIntegrator',
+		title: localize('gettingStarted.microIntegrator.title', "Micro Integrator"),
+		description: localize('gettingStarted.microIntegrator.description', "Open WSO2 Micro Integrator extension"),
+		// You can use a custom icon or a Codicon
+		icon: Codicon.extensions, // Using a built-in icon as fallback
+		content: {
+			type: 'startEntry',
+			command: 'command:workbench.view.extension.micro-integrator', // This command will open the extension view
+		}
+	},
+	{
 		id: 'topLevelOpenFile',
 		title: localize('gettingStarted.openFile.title', "Open File..."),
 		description: localize('gettingStarted.openFile.description', "Open a file to start working"),
