@@ -125,3 +125,17 @@ const globalSchema: IJSONSchema = {
 const reg = Registry.as<JSONContributionRegistry.IJSONContributionRegistry>(JSONContributionRegistry.Extensions.JSONContribution);
 reg.registerSchema(languageScopeSchemaId, languageScopeSchema);
 reg.registerSchema(globalSchemaId, globalSchema);
+
+const configurationRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);
+configurationRegistry.registerConfiguration({
+	...editorConfigurationBaseNode,
+	properties: {
+		'files.associations': {
+			type: 'object',
+			default: {
+				'*.xml': 'synapseXml' // Set synapseXml as default for XML files
+			},
+			// ...existing properties
+		}
+	}
+});
