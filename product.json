@@ -84,9 +84,9 @@
 		},
 		{
 			"name": "wso2-micro-integrator",
-			"version": "2.0.4",
-			"vsix": "extensions/vsix/wso2.micro-integrator-2.0.4.vsix",
-			"sha256": "4ae97af1deb86c7968a7bf8367f5bc05dd2207717d359cc7cc0183381d95a33f",
+			"version": "2.1.2",
+			"vsix": "extensions/vsix/micro-integrator-2.1.2.vsix",
+			"sha256": "9c7c90c0ddb08c0d2dc1b0dc59955026ee61100e01dc39dd7147ed25693e80cb",
 			"metadata": {
 				"publisherId": {
 					"publisherName": "wso2-micro-integrator",
@@ -95,6 +95,37 @@
 				},
 				"publisherDisplayName": "wso2"
 			}
+		},
+		{
+			"name": "wso2-platform",
+			"version": "1.0.0",
+			"vsix": "extensions/vsix/wso2-platform-1.0.0.vsix",
+			"sha256": "78df995d6367e5dd6adc8b76f46137497cac0455593336a2b9d603a05bfb83e4",
+			"metadata": {
+				"publisherId": {
+					"publisherName": "wso2",
+					"displayName": "wso2",
+					"flags": "verified"
+				},
+				"publisherDisplayName": "wso2"
+			}
+		},
+		{
+			"name": "redhat-yaml",
+			"version": "1.17.0",
+			"vsix": "extensions/vsix/redhat.vscode-yaml-1.17.0.vsix",
+			"sha256": "bb7b262e4e72093f4332d167af1879b4a6df0d0d976cbe9b9766d718e0f7f17d",
+			"metadata": {
+				"publisherId": {
+					"publisherName": "Red Hat",
+					"displayName": "Red Hat",
+					"flags": "verified"
+				},
+				"publisherDisplayName": "Red Hat"
+			}
 		}
+
 	]
+
+
 }

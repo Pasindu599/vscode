@@ -11,12 +11,12 @@ import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js
 import { ActionViewItem, IActionViewItemOptions } from '../../../../base/browser/ui/actionbar/actionViewItems.js';
 import * as aria from '../../../../base/browser/ui/aria/aria.js';
 import { Button } from '../../../../base/browser/ui/button/button.js';
-import { IActionProvider } from '../../../../base/browser/ui/dropdown/dropdown.js';
+
 import { createInstantHoverDelegate, getDefaultHoverDelegate } from '../../../../base/browser/ui/hover/hoverDelegateFactory.js';
-import { renderLabelWithIcons } from '../../../../base/browser/ui/iconLabel/iconLabels.js';
-import { IAction, Separator, toAction } from '../../../../base/common/actions.js';
-import { Codicon } from '../../../../base/common/codicons.js';
-import { Emitter, Event } from '../../../../base/common/event.js';
+
+import { IAction } from '../../../../base/common/actions.js';
+
+import { Emitter } from '../../../../base/common/event.js';
 import { HistoryNavigator2 } from '../../../../base/common/history.js';
 import { KeyCode } from '../../../../base/common/keyCodes.js';
 import { Disposable, DisposableStore, IDisposable, MutableDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
@@ -42,15 +42,12 @@ import { SuggestController } from '../../../../editor/contrib/suggest/browser/su
 import { localize } from '../../../../nls.js';
 import { IAccessibilityService } from '../../../../platform/accessibility/common/accessibility.js';
 import { MenuWorkbenchButtonBar } from '../../../../platform/actions/browser/buttonbar.js';
-import { DropdownMenuActionViewItemWithKeybinding } from '../../../../platform/actions/browser/dropdownActionViewItemWithKeybinding.js';
-import { DropdownWithPrimaryActionViewItem, IDropdownWithPrimaryActionViewItemOptions } from '../../../../platform/actions/browser/dropdownWithPrimaryActionViewItem.js';
-import { getFlatActionBarActions } from '../../../../platform/actions/browser/menuEntryActionViewItem.js';
 import { HiddenItemStrategy, MenuWorkbenchToolBar } from '../../../../platform/actions/browser/toolbar.js';
-import { IMenuService, MenuId, MenuItemAction } from '../../../../platform/actions/common/actions.js';
-import { ICommandService } from '../../../../platform/commands/common/commands.js';
+import { MenuId } from '../../../../platform/actions/common/actions.js';
+
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
-import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
+
 import { IFileService } from '../../../../platform/files/common/files.js';
 import { registerAndCreateHistoryNavigationContext } from '../../../../platform/history/browser/contextScopedHistoryWidget.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
@@ -59,7 +56,7 @@ import { IKeybindingService } from '../../../../platform/keybinding/common/keybi
 import { ILabelService } from '../../../../platform/label/common/label.js';
 import { WorkbenchList } from '../../../../platform/list/browser/listService.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
-import { INotificationService } from '../../../../platform/notification/common/notification.js';
+
 import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
 import { ResourceLabels } from '../../../browser/labels.js';
@@ -70,7 +67,7 @@ import { getSimpleCodeEditorWidgetOptions, getSimpleEditorOptions, setupSimpleEd
 import { IChatAgentService } from '../common/chatAgents.js';
 import { ChatContextKeys } from '../common/chatContextKeys.js';
 import { IChatEditingSession } from '../common/chatEditingService.js';
-import { ChatEntitlement, IChatEntitlementService } from '../common/chatEntitlementService.js';
+
 import { IChatRequestVariableEntry, isImageVariableEntry, isLinkVariableEntry, isPasteVariableEntry } from '../common/chatModel.js';
 import { IChatFollowup, IChatService } from '../common/chatService.js';
 import { IChatVariablesService } from '../common/chatVariables.js';
@@ -78,7 +75,7 @@ import { IChatResponseViewModel } from '../common/chatViewModel.js';
 import { ChatInputHistoryMaxEntries, IChatHistoryEntry, IChatInputState, IChatWidgetHistoryService } from '../common/chatWidgetHistoryService.js';
 import { ChatAgentLocation, ChatMode } from '../common/constants.js';
 import { ILanguageModelChatMetadataAndIdentifier, ILanguageModelsService } from '../common/languageModels.js';
-import { CancelAction, ChatSubmitAction, ChatSubmitSecondaryAgentAction, ChatSwitchToNextModelActionId, IChatExecuteActionContext, IToggleChatModeArgs, ToggleAgentModeActionId } from './actions/chatExecuteActions.js';
+// import { IChatExecuteActionContext, } from './actions/chatExecuteActions.js';
 import { ImplicitContextAttachmentWidget } from './attachments/implicitContextAttachment.js';
 import { PromptAttachmentsCollectionWidget } from './attachments/promptAttachments/promptAttachmentsCollectionWidget.js';
 import { IChatWidget } from './chat.js';
@@ -901,7 +898,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 			hiddenItemStrategy: HiddenItemStrategy.Ignore,
 			hoverDelegate
 		}));
-		this.inputActionsToolbar.context = { widget } satisfies IChatExecuteActionContext;
+		// this.inputActionsToolbar.context = { widget } satisfies IChatExecuteActionContext;
 		this._register(this.inputActionsToolbar.onDidChangeMenuItems(() => {
 			if (this.cachedDimensions && typeof this.cachedInputToolbarWidth === 'number' && this.cachedInputToolbarWidth !== this.inputActionsToolbar.getItemsWidth()) {
 				this.layout(this.cachedDimensions.height, this.cachedDimensions.width);
@@ -914,45 +911,9 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 			},
 			hoverDelegate,
 			hiddenItemStrategy: HiddenItemStrategy.Ignore, // keep it lean when hiding items and avoid a "..." overflow menu
-			actionViewItemProvider: (action, options) => {
-				if (this.location === ChatAgentLocation.Panel || this.location === ChatAgentLocation.Editor) {
-					if ((action.id === ChatSubmitAction.ID || action.id === CancelAction.ID) && action instanceof MenuItemAction) {
-						const dropdownAction = this.instantiationService.createInstance(MenuItemAction, { id: 'chat.moreExecuteActions', title: localize('notebook.moreExecuteActionsLabel', "More..."), icon: Codicon.chevronDown }, undefined, undefined, undefined, undefined);
-						return this.instantiationService.createInstance(ChatSubmitDropdownActionItem, action, dropdownAction, { ...options, menuAsChild: false });
-					}
-				}
-
-				if (action.id === ChatSwitchToNextModelActionId && action instanceof MenuItemAction) {
-					if (!this._currentLanguageModel) {
-						this.setCurrentLanguageModelToDefault();
-					}
-
-					if (this._currentLanguageModel) {
-						const itemDelegate: ModelPickerDelegate = {
-							onDidChangeModel: this._onDidChangeCurrentLanguageModel.event,
-							setModel: (model: ILanguageModelChatMetadataAndIdentifier) => {
-								// The user changed the language model, so we don't wait for the persisted option to be registered
-								this._waitForPersistedLanguageModel.clear();
-								this.setCurrentLanguageModel(model);
-								this.renderAttachedContext();
-							},
-							getModels: () => this.getModels()
-						};
-						return this.instantiationService.createInstance(ModelPickerActionViewItem, action, this._currentLanguageModel, itemDelegate);
-					}
-				} else if (action.id === ToggleAgentModeActionId && action instanceof MenuItemAction) {
-					const delegate: IModePickerDelegate = {
-						getMode: () => this.currentMode,
-						onDidChangeMode: this._onDidChangeCurrentChatMode.event
-					};
-					return this.instantiationService.createInstance(ToggleChatModeActionViewItem, action, delegate);
-				}
-
-				return undefined;
-			}
 		}));
 		this.executeToolbar.getElement().classList.add('chat-execute-toolbar');
-		this.executeToolbar.context = { widget } satisfies IChatExecuteActionContext;
+		// this.executeToolbar.context = { widget } satisfies IChatExecuteActionContext;
 		this._register(this.executeToolbar.onDidChangeMenuItems(() => {
 			if (this.cachedDimensions && typeof this.cachedExecuteToolbarWidth === 'number' && this.cachedExecuteToolbarWidth !== this.executeToolbar.getItemsWidth()) {
 				this.layout(this.cachedDimensions.height, this.cachedDimensions.width);
@@ -968,7 +929,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 			}));
 			this.inputSideToolbarContainer = toolbarSide.getElement();
 			toolbarSide.getElement().classList.add('chat-side-toolbar');
-			toolbarSide.context = { widget } satisfies IChatExecuteActionContext;
+			// toolbarSide.context = { widget } satisfies IChatExecuteActionContext;
 		}
 
 		let inputModel = this.modelService.getModel(this.inputUri);
@@ -1262,8 +1223,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 				hoverDelegate,
 				ariaLabel: localize('chatEditingSession.addSuggestion', 'Add suggestion {0}', this.labelService.getUriLabel(uri, { relative: true })),
 			}));
-			addButton.icon = Codicon.add;
-			addButton.setTitle(localize('chatEditingSession.addSuggested', 'Add suggestion'));
+
 			this._chatEditsActionsDisposables.add(addButton.onDidClick(() => {
 				group.remove(); // REMOVE asap
 				this._attachmentModel.addFile(uri);
@@ -1382,200 +1342,13 @@ function getLastPosition(model: ITextModel): IPosition {
 
 // This does seems like a lot just to customize an item with dropdown. This whole class exists just because we need an
 // onDidChange listener on the submenu, which is apparently not needed in other cases.
-class ChatSubmitDropdownActionItem extends DropdownWithPrimaryActionViewItem {
-	constructor(
-		action: MenuItemAction,
-		dropdownAction: IAction,
-		options: IDropdownWithPrimaryActionViewItemOptions,
-		@IMenuService menuService: IMenuService,
-		@IContextMenuService contextMenuService: IContextMenuService,
-		@IChatAgentService chatAgentService: IChatAgentService,
-		@IContextKeyService contextKeyService: IContextKeyService,
-		@IKeybindingService keybindingService: IKeybindingService,
-		@INotificationService notificationService: INotificationService,
-		@IThemeService themeService: IThemeService,
-		@IAccessibilityService accessibilityService: IAccessibilityService
-	) {
-		super(
-			action,
-			dropdownAction,
-			[],
-			'',
-			{
-				...options,
-				getKeyBinding: (action: IAction) => keybindingService.lookupKeybinding(action.id, contextKeyService)
-			},
-			contextMenuService,
-			keybindingService,
-			notificationService,
-			contextKeyService,
-			themeService,
-			accessibilityService);
-		const menu = menuService.createMenu(MenuId.ChatExecuteSecondary, contextKeyService);
-		const setActions = () => {
-			const secondary = getFlatActionBarActions(menu.getActions({ shouldForwardArgs: true }));
-			const secondaryAgent = chatAgentService.getSecondaryAgent();
-			if (secondaryAgent) {
-				secondary.forEach(a => {
-					if (a.id === ChatSubmitSecondaryAgentAction.ID) {
-						a.label = localize('chat.submitToSecondaryAgent', "Send to @{0}", secondaryAgent.name);
-					}
 
-					return a;
-				});
-			}
 
-			this.update(dropdownAction, secondary);
-		};
-		setActions();
-		this._register(menu.onDidChange(() => setActions()));
-	}
-}
 
-interface ModelPickerDelegate {
-	onDidChangeModel: Event<ILanguageModelChatMetadataAndIdentifier>;
-	setModel(selectedModelId: ILanguageModelChatMetadataAndIdentifier): void;
-	getModels(): ILanguageModelChatMetadataAndIdentifier[];
-}
-
-class ModelPickerActionViewItem extends DropdownMenuActionViewItemWithKeybinding {
-	constructor(
-		action: MenuItemAction,
-		private currentLanguageModel: ILanguageModelChatMetadataAndIdentifier,
-		private readonly delegate: ModelPickerDelegate,
-		@IContextMenuService contextMenuService: IContextMenuService,
-		@IKeybindingService keybindingService: IKeybindingService,
-		@IContextKeyService contextKeyService: IContextKeyService,
-		@IChatEntitlementService chatEntitlementService: IChatEntitlementService,
-		@ICommandService commandService: ICommandService,
-	) {
-		const modelActionsProvider: IActionProvider = {
-			getActions: () => {
-				const setLanguageModelAction = (entry: ILanguageModelChatMetadataAndIdentifier): IAction => {
-					return {
-						id: entry.identifier,
-						label: entry.metadata.name,
-						tooltip: '',
-						class: undefined,
-						enabled: true,
-						checked: entry.identifier === this.currentLanguageModel.identifier,
-						run: () => {
-							this.currentLanguageModel = entry;
-							this.renderLabel(this.element!);
-							this.delegate.setModel(entry);
-						}
-					};
-				};
-
-				const models: ILanguageModelChatMetadataAndIdentifier[] = this.delegate.getModels();
-				const actions = models.map(entry => setLanguageModelAction(entry));
-				if (chatEntitlementService.entitlement === ChatEntitlement.Limited) {
-					actions.push(new Separator());
-					actions.push(toAction({ id: 'moreModels', label: localize('chat.moreModels', "Add More Models..."), run: () => commandService.executeCommand('workbench.action.chat.upgradePlan', 'chat-models') }));
-				}
-
-				return actions;
-			}
-		};
-
-		const actionWithLabel: IAction = {
-			...action,
-			tooltip: localize('chat.modelPicker.label', "Pick Model"),
-			run: () => { }
-		};
-		super(actionWithLabel, modelActionsProvider, contextMenuService, undefined, keybindingService, contextKeyService);
-		this._register(delegate.onDidChangeModel(modelId => {
-			this.currentLanguageModel = modelId;
-			this.renderLabel(this.element!);
-		}));
-	}
-
-	protected override renderLabel(element: HTMLElement): IDisposable | null {
-		this.setAriaLabelAttributes(element);
-		dom.reset(element, dom.$('span.chat-model-label', undefined, this.currentLanguageModel.metadata.name), ...renderLabelWithIcons(`$(chevron-down)`));
-		return null;
-	}
-
-	override render(container: HTMLElement): void {
-		super.render(container);
-		container.classList.add('chat-modelPicker-item', 'chat-dropdown-item');
-	}
-}
 
 const chatInputEditorContainerSelector = '.interactive-input-editor';
 setupSimpleEditorSelectionStyling(chatInputEditorContainerSelector);
 
-interface IModePickerDelegate {
-	onDidChangeMode: Event<void>;
-	getMode(): ChatMode;
-}
-
-class ToggleChatModeActionViewItem extends DropdownMenuActionViewItemWithKeybinding {
-	constructor(
-		action: MenuItemAction,
-		private readonly delegate: IModePickerDelegate,
-		@IContextMenuService contextMenuService: IContextMenuService,
-		@IKeybindingService keybindingService: IKeybindingService,
-		@IContextKeyService contextKeyService: IContextKeyService,
-		@IChatService chatService: IChatService,
-	) {
-		const makeAction = (mode: ChatMode): IAction => ({
-			...action,
-			id: mode,
-			label: this.modeToString(mode),
-			class: undefined,
-			enabled: true,
-			checked: delegate.getMode() === mode,
-			run: async () => {
-				const result = await action.run({ mode } satisfies IToggleChatModeArgs);
-				this.renderLabel(this.element!);
-				return result;
-			}
-		});
-
-		const actionProvider: IActionProvider = {
-			getActions: () => {
-				const agentStateActions = [
-					makeAction(ChatMode.Agent),
-					makeAction(ChatMode.Edit),
-				];
-				if (chatService.unifiedViewEnabled) {
-					agentStateActions.unshift(makeAction(ChatMode.Chat));
-				}
-
-				return agentStateActions;
-			}
-		};
-
-		super(action, actionProvider, contextMenuService, undefined, keybindingService, contextKeyService);
-		this._register(delegate.onDidChangeMode(() => this.renderLabel(this.element!)));
-	}
-
-	private modeToString(mode: ChatMode) {
-		switch (mode) {
-			case ChatMode.Agent:
-				return localize('chat.agentMode', "Agent");
-			case ChatMode.Edit:
-				return localize('chat.normalMode', "Edit");
-			case ChatMode.Chat:
-				return localize('chat.chatMode', "Chat");
-		}
-	}
-
-	protected override renderLabel(element: HTMLElement): IDisposable | null {
-		// Can't call super.renderLabel because it has a hack of forcing the 'codicon' class
-		this.setAriaLabelAttributes(element);
-
-		const state = this.modeToString(this.delegate.getMode());
-		dom.reset(element, dom.$('span.chat-model-label', undefined, state), ...renderLabelWithIcons(`$(chevron-down)`));
-		return null;
-	}
-
-	override render(container: HTMLElement): void {
-		super.render(container);
-		container.classList.add('chat-dropdown-item');
-	}
-}
 
 class AddFilesButton extends ActionViewItem {
 	constructor(context: unknown, action: IAction, options: IActionViewItemOptions) {

@@ -9,12 +9,9 @@ import { ServicesAccessor } from '../../../../platform/instantiation/common/inst
 import { KeybindingWeight } from '../../../../platform/keybinding/common/keybindingsRegistry.js';
 import { InlineChatController } from '../browser/inlineChatController.js';
 import { AbstractInline1ChatAction, setHoldForSpeech } from '../browser/inlineChatActions.js';
-import { disposableTimeout } from '../../../../base/common/async.js';
+// import { disposableTimeout } from '../../../../base/common/async.js';
 import { EditorContextKeys } from '../../../../editor/common/editorContextKeys.js';
-import { ICommandService } from '../../../../platform/commands/common/commands.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
-import { StartVoiceChatAction, StopListeningAction, VOICE_KEY_HOLD_THRESHOLD } from '../../chat/electron-sandbox/actions/voiceChatActions.js';
-import { IChatExecuteActionContext } from '../../chat/browser/actions/chatExecuteActions.js';
 import { CTX_INLINE_CHAT_VISIBLE, InlineChatConfigKeys } from '../common/inlineChat.js';
 import { HasSpeechProvider, ISpeechService } from '../../speech/common/speechService.js';
 import { localize2 } from '../../../../nls.js';
@@ -51,7 +48,7 @@ function holdForSpeech(accessor: ServicesAccessor, ctrl: InlineChatController, a
 	const configService = accessor.get(IConfigurationService);
 	const speechService = accessor.get(ISpeechService);
 	const keybindingService = accessor.get(IKeybindingService);
-	const commandService = accessor.get(ICommandService);
+
 
 	// enabled or possible?
 	if (!configService.getValue<boolean>(InlineChatConfigKeys.HoldToSpeech || !speechService.hasSpeechProvider)) {
@@ -62,21 +59,8 @@ function holdForSpeech(accessor: ServicesAccessor, ctrl: InlineChatController, a
 	if (!holdMode) {
 		return;
 	}
-	let listening = false;
-	const handle = disposableTimeout(() => {
-		// start VOICE input
-		commandService.executeCommand(StartVoiceChatAction.ID, { voice: { disableTimeout: true } } satisfies IChatExecuteActionContext);
-		listening = true;
-	}, VOICE_KEY_HOLD_THRESHOLD);
 
-	holdMode.finally(() => {
-		if (listening) {
-			commandService.executeCommand(StopListeningAction.ID).finally(() => {
-				ctrl.widget.chatWidget.acceptInput();
-			});
-		}
-		handle.dispose();
-	});
+
 }
 
 // make this accessible to the chat actions from the browser layer

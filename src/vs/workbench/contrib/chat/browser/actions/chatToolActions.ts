@@ -3,96 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Codicon } from '../../../../../base/common/codicons.js';
+// import { Codicon } from '../../../../../base/common/codicons.js';
 import { diffSets } from '../../../../../base/common/collections.js';
 import { Event } from '../../../../../base/common/event.js';
-import { KeyCode, KeyMod } from '../../../../../base/common/keyCodes.js';
+// import { KeyCode, KeyMod } from '../../../../../base/common/keyCodes.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { ServicesAccessor } from '../../../../../editor/browser/editorExtensions.js';
-import { localize, localize2 } from '../../../../../nls.js';
-import { Action2, MenuId, registerAction2 } from '../../../../../platform/actions/common/actions.js';
-import { ContextKeyExpr } from '../../../../../platform/contextkey/common/contextkey.js';
+import { localize } from '../../../../../nls.js';
+import { Action2 } from '../../../../../platform/actions/common/actions.js';
+// import { ContextKeyExpr } from '../../../../../platform/contextkey/common/contextkey.js';
 import { ExtensionIdentifier } from '../../../../../platform/extensions/common/extensions.js';
-import { KeybindingWeight } from '../../../../../platform/keybinding/common/keybindingsRegistry.js';
+// import { KeybindingWeight } from '../../../../../platform/keybinding/common/keybindingsRegistry.js';
 import { IQuickInputService, IQuickPickItem, IQuickPickSeparator } from '../../../../../platform/quickinput/common/quickInput.js';
 import { IExtensionService } from '../../../../services/extensions/common/extensions.js';
 import { IMcpService, IMcpServer, McpConnectionState } from '../../../mcp/common/mcpTypes.js';
-import { ChatContextKeys } from '../../common/chatContextKeys.js';
-import { IChatToolInvocation } from '../../common/chatService.js';
-import { isResponseVM } from '../../common/chatViewModel.js';
-import { ChatMode } from '../../common/constants.js';
+
 import { ILanguageModelToolsService, IToolData } from '../../common/languageModelToolsService.js';
 import { IChatWidget, IChatWidgetService } from '../chat.js';
 import { ChatInputPart } from '../chatInputPart.js';
-import { CHAT_CATEGORY } from './chatActions.js';
+// import { CHAT_CATEGORY } from './chatActions.js';
 
 export const AcceptToolConfirmationActionId = 'workbench.action.chat.acceptTool';
 
-class AcceptToolConfirmation extends Action2 {
-	constructor() {
-		super({
-			id: AcceptToolConfirmationActionId,
-			title: localize2('chat.accept', "Accept"),
-			f1: false,
-			category: CHAT_CATEGORY,
-			keybinding: {
-				when: ContextKeyExpr.and(ChatContextKeys.inChatSession, ChatContextKeys.Editing.hasToolConfirmation),
-				primary: KeyMod.CtrlCmd | KeyCode.Enter,
-				// Override chatEditor.action.accept
-				weight: KeybindingWeight.WorkbenchContrib + 1,
-			},
-		});
-	}
 
-	run(accessor: ServicesAccessor, ...args: any[]) {
-		const chatWidgetService = accessor.get(IChatWidgetService);
-		const widget = chatWidgetService.lastFocusedWidget;
-		const lastItem = widget?.viewModel?.getItems().at(-1);
-		if (!isResponseVM(lastItem)) {
-			return;
-		}
-
-		const unconfirmedToolInvocation = lastItem.model.response.value.find((item): item is IChatToolInvocation => item.kind === 'toolInvocation' && !item.isConfirmed);
-		if (unconfirmedToolInvocation) {
-			unconfirmedToolInvocation.confirmed.complete(true);
-		}
-
-		// Return focus to the chat input, in case it was in the tool confirmation editor
-		widget?.focusInput();
-	}
-}
 
 export class AttachToolsAction extends Action2 {
 
 	static readonly id = 'workbench.action.chat.attachTools';
 
-	constructor() {
-		super({
-			id: AttachToolsAction.id,
-			title: localize('label', "Select Tools..."),
-			icon: Codicon.tools,
-			f1: false,
-			category: CHAT_CATEGORY,
-			precondition: ContextKeyExpr.and(
-				ContextKeyExpr.or(ChatContextKeys.Tools.toolsCount.greater(0)),
-				ChatContextKeys.chatMode.isEqualTo(ChatMode.Agent)
-			),
-			menu: {
-				when: ContextKeyExpr.and(
-					ContextKeyExpr.or(ChatContextKeys.Tools.toolsCount.greater(0)),
-					ChatContextKeys.chatMode.isEqualTo(ChatMode.Agent)
-				),
-				id: MenuId.ChatInputAttachmentToolbar,
-				group: 'navigation',
-				order: 1
-			},
-			keybinding: {
-				when: ContextKeyExpr.and(ChatContextKeys.inChatInput, ChatContextKeys.chatMode.isEqualTo(ChatMode.Agent)),
-				primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Slash,
-				weight: KeybindingWeight.EditorContrib
-			}
-		});
-	}
+
 
 	override async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 
@@ -283,6 +222,5 @@ export class AttachToolsAction extends Action2 {
 }
 
 export function registerChatToolActions() {
-	registerAction2(AcceptToolConfirmation);
-	registerAction2(AttachToolsAction);
+
 }

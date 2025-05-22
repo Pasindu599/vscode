@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from '../../../../../base/common/cancellation.js';
+// import { CancellationToken } from '../../../../../base/common/cancellation.js';
 import { Codicon } from '../../../../../base/common/codicons.js';
 import { KeyCode, KeyMod } from '../../../../../base/common/keyCodes.js';
 import { basename } from '../../../../../base/common/resources.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { isCodeEditor } from '../../../../../editor/browser/editorBrowser.js';
 import { ServicesAccessor } from '../../../../../editor/browser/editorExtensions.js';
-import { Position } from '../../../../../editor/common/core/position.js';
-import { EditorContextKeys } from '../../../../../editor/common/editorContextKeys.js';
-import { isLocation, Location } from '../../../../../editor/common/languages.js';
-import { ITextModel } from '../../../../../editor/common/model.js';
-import { ILanguageFeaturesService } from '../../../../../editor/common/services/languageFeatures.js';
-import { ITextModelService } from '../../../../../editor/common/services/resolverService.js';
+// import { Position } from '../../../../../editor/common/core/position.js';
+// import { EditorContextKeys } from '../../../../../editor/common/editorContextKeys.js';
+// import { isLocation, Location } from '../../../../../editor/common/languages.js';
+// import { ITextModel } from '../../../../../editor/common/model.js';
+// import { ILanguageFeaturesService } from '../../../../../editor/common/services/languageFeatures.js';
+// import { ITextModelService } from '../../../../../editor/common/services/resolverService.js';
 import { localize, localize2 } from '../../../../../nls.js';
-import { Action2, IAction2Options, MenuId, registerAction2 } from '../../../../../platform/actions/common/actions.js';
-import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
+import { Action2, MenuId, registerAction2 } from '../../../../../platform/actions/common/actions.js';
+// import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 import { ContextKeyExpr } from '../../../../../platform/contextkey/common/contextkey.js';
 import { IDialogService } from '../../../../../platform/dialogs/common/dialogs.js';
 import { EditorActivation } from '../../../../../platform/editor/common/editor.js';
@@ -30,19 +30,12 @@ import { isChatViewTitleActionContext } from '../../common/chatActions.js';
 import { ChatContextKeys } from '../../common/chatContextKeys.js';
 import { applyingChatEditsFailedContextKey, CHAT_EDITING_MULTI_DIFF_SOURCE_RESOLVER_SCHEME, chatEditingResourceContextKey, chatEditingWidgetFileStateContextKey, decidedChatEditingResourceContextKey, hasAppliedChatEditsContextKey, hasUndecidedChatEditingResourceContextKey, IChatEditingService, IChatEditingSession, WorkingSetEntryRemovalReason, WorkingSetEntryState } from '../../common/chatEditingService.js';
 import { IChatService } from '../../common/chatService.js';
-import { isRequestVM, isResponseVM } from '../../common/chatViewModel.js';
-import { ChatAgentLocation, ChatMode } from '../../common/constants.js';
-import { CHAT_CATEGORY } from '../actions/chatActions.js';
-import { ChatTreeItem, IChatWidget, IChatWidgetService } from '../chat.js';
+// import { isRequestVM, isResponseVM } from '../../common/chatViewModel.js';
+import { ChatAgentLocation } from '../../common/constants.js';
+// import { CHAT_CATEGORY } from '../actions/chatActions.js';
+import { IChatWidget, IChatWidgetService } from '../chat.js';
 
 export abstract class EditingSessionAction extends Action2 {
-
-	constructor(opts: Readonly<IAction2Options>) {
-		super({
-			category: CHAT_CATEGORY,
-			...opts
-		});
-	}
 
 	run(accessor: ServicesAccessor, ...args: any[]) {
 		const context = getEditingSessionContext(accessor, args);
@@ -435,114 +428,6 @@ registerAction2(class AddFilesToWorkingSetAction extends EditingSessionAction {
 	}
 });
 
-registerAction2(class RemoveAction extends Action2 {
-	constructor() {
-		super({
-			id: 'workbench.action.chat.undoEdits',
-			title: localize2('chat.undoEdits.label', "Undo Edits"),
-			f1: false,
-			category: CHAT_CATEGORY,
-			icon: Codicon.x,
-			keybinding: {
-				primary: KeyCode.Delete,
-				mac: {
-					primary: KeyMod.CtrlCmd | KeyCode.Backspace,
-				},
-				when: ContextKeyExpr.and(ChatContextKeys.chatMode.notEqualsTo(ChatMode.Chat), ChatContextKeys.inChatSession, ChatContextKeys.inChatInput.negate()),
-				weight: KeybindingWeight.WorkbenchContrib,
-			},
-			menu: [
-				{
-					id: MenuId.ChatMessageTitle,
-					group: 'navigation',
-					order: 2,
-					when: ContextKeyExpr.and(ChatContextKeys.chatMode.notEqualsTo(ChatMode.Chat), ChatContextKeys.isRequest)
-				}
-			]
-		});
-	}
-
-	async run(accessor: ServicesAccessor, ...args: any[]) {
-		let item: ChatTreeItem | undefined = args[0];
-		if (!isResponseVM(item) && !isRequestVM(item)) {
-			const chatWidgetService = accessor.get(IChatWidgetService);
-			const widget = chatWidgetService.lastFocusedWidget;
-			item = widget?.getFocus();
-		}
-
-		if (!item) {
-			return;
-		}
-
-		const configurationService = accessor.get(IConfigurationService);
-		const dialogService = accessor.get(IDialogService);
-		const chatEditingService = accessor.get(IChatEditingService);
-		const chatService = accessor.get(IChatService);
-		const chatModel = chatService.getSession(item.sessionId);
-		if (chatModel?.initialLocation !== ChatAgentLocation.EditingSession) {
-			return;
-		}
-
-		const session = chatEditingService.getEditingSession(chatModel.sessionId);
-		if (!session) {
-			return;
-		}
-
-		const requestId = isRequestVM(item) ? item.id :
-			isResponseVM(item) ? item.requestId : undefined;
-
-		if (requestId) {
-			const chatRequests = chatModel.getRequests();
-			const itemIndex = chatRequests.findIndex(request => request.id === requestId);
-			const editsToUndo = chatRequests.length - itemIndex;
-
-			const requestsToRemove = chatRequests.slice(itemIndex);
-			const requestIdsToRemove = new Set(requestsToRemove.map(request => request.id));
-			const entriesModifiedInRequestsToRemove = session.entries.get().filter((entry) => requestIdsToRemove.has(entry.lastModifyingRequestId)) ?? [];
-			const shouldPrompt = entriesModifiedInRequestsToRemove.length > 0 && configurationService.getValue('chat.editing.confirmEditRequestRemoval') === true;
-
-			let message: string;
-			if (editsToUndo === 1) {
-				if (entriesModifiedInRequestsToRemove.length === 1) {
-					message = localize('chat.removeLast.confirmation.message2', "This will remove your last request and undo the edits made to {0}. Do you want to proceed?", basename(entriesModifiedInRequestsToRemove[0].modifiedURI));
-				} else {
-					message = localize('chat.removeLast.confirmation.multipleEdits.message', "This will remove your last request and undo edits made to {0} files in your working set. Do you want to proceed?", entriesModifiedInRequestsToRemove.length);
-				}
-			} else {
-				if (entriesModifiedInRequestsToRemove.length === 1) {
-					message = localize('chat.remove.confirmation.message2', "This will remove all subsequent requests and undo edits made to {0}. Do you want to proceed?", basename(entriesModifiedInRequestsToRemove[0].modifiedURI));
-				} else {
-					message = localize('chat.remove.confirmation.multipleEdits.message', "This will remove all subsequent requests and undo edits made to {0} files in your working set. Do you want to proceed?", entriesModifiedInRequestsToRemove.length);
-				}
-			}
-
-			const confirmation = shouldPrompt
-				? await dialogService.confirm({
-					title: editsToUndo === 1
-						? localize('chat.removeLast.confirmation.title', "Do you want to undo your last edit?")
-						: localize('chat.remove.confirmation.title', "Do you want to undo {0} edits?", editsToUndo),
-					message: message,
-					primaryButton: localize('chat.remove.confirmation.primaryButton', "Yes"),
-					checkbox: { label: localize('chat.remove.confirmation.checkbox', "Don't ask again"), checked: false },
-					type: 'info'
-				})
-				: { confirmed: true };
-
-			if (!confirmation.confirmed) {
-				return;
-			}
-
-			if (confirmation.checkboxChecked) {
-				await configurationService.updateValue('chat.editing.confirmEditRequestRemoval', false);
-			}
-
-			// Restore the snapshot to what it was before the request(s) that we deleted
-			const snapshotRequestId = chatRequests[itemIndex].id;
-			await session.restoreSnapshot(snapshotRequestId, undefined);
-		}
-	}
-});
-
 registerAction2(class OpenWorkingSetHistoryAction extends Action2 {
 
 	static readonly id = 'chat.openFileUpdatedBySnapshot';
@@ -606,85 +491,5 @@ registerAction2(class OpenWorkingSetHistoryAction extends Action2 {
 				editor.updateOptions({ readOnly: true });
 			}
 		}
-	}
-});
-
-registerAction2(class ResolveSymbolsContextAction extends EditingSessionAction {
-	constructor() {
-		super({
-			id: 'workbench.action.edits.addFilesFromReferences',
-			title: localize2('addFilesFromReferences', "Add Files From References"),
-			f1: false,
-			category: CHAT_CATEGORY,
-			menu: {
-				id: MenuId.ChatInputSymbolAttachmentContext,
-				group: 'navigation',
-				order: 1,
-				when: ContextKeyExpr.and(ChatContextKeys.chatMode.isEqualTo(ChatMode.Chat), EditorContextKeys.hasReferenceProvider)
-			}
-		});
-	}
-
-	override async runEditingSessionAction(accessor: ServicesAccessor, editingSession: IChatEditingSession, chatWidget: IChatWidget, ...args: any[]): Promise<void> {
-		if (args.length === 0 || !isLocation(args[0])) {
-			return;
-		}
-
-		const textModelService = accessor.get(ITextModelService);
-		const languageFeaturesService = accessor.get(ILanguageFeaturesService);
-		const symbol = args[0] as Location;
-
-		const modelReference = await textModelService.createModelReference(symbol.uri);
-		const textModel = modelReference.object.textEditorModel;
-		if (!textModel) {
-			return;
-		}
-
-		const position = new Position(symbol.range.startLineNumber, symbol.range.startColumn);
-
-		const [references, definitions, implementations] = await Promise.all([
-			this.getReferences(position, textModel, languageFeaturesService),
-			this.getDefinitions(position, textModel, languageFeaturesService),
-			this.getImplementations(position, textModel, languageFeaturesService)
-		]);
-
-		// Sort the references, definitions and implementations by
-		// how important it is that they make it into the working set as it has limited size
-		const attachments = [];
-		for (const reference of [...definitions, ...implementations, ...references]) {
-			attachments.push(chatWidget.attachmentModel.asVariableEntry(reference.uri));
-		}
-
-		chatWidget.attachmentModel.addContext(...attachments);
-	}
-
-	private async getReferences(position: Position, textModel: ITextModel, languageFeaturesService: ILanguageFeaturesService): Promise<Location[]> {
-		const referenceProviders = languageFeaturesService.referenceProvider.all(textModel);
-
-		const references = await Promise.all(referenceProviders.map(async (referenceProvider) => {
-			return await referenceProvider.provideReferences(textModel, position, { includeDeclaration: true }, CancellationToken.None) ?? [];
-		}));
-
-		return references.flat();
-	}
-
-	private async getDefinitions(position: Position, textModel: ITextModel, languageFeaturesService: ILanguageFeaturesService): Promise<Location[]> {
-		const definitionProviders = languageFeaturesService.definitionProvider.all(textModel);
-
-		const definitions = await Promise.all(definitionProviders.map(async (definitionProvider) => {
-			return await definitionProvider.provideDefinition(textModel, position, CancellationToken.None) ?? [];
-		}));
-
-		return definitions.flat();
-	}
-
-	private async getImplementations(position: Position, textModel: ITextModel, languageFeaturesService: ILanguageFeaturesService): Promise<Location[]> {
-		const implementationProviders = languageFeaturesService.implementationProvider.all(textModel);
-
-		const implementations = await Promise.all(implementationProviders.map(async (implementationProvider) => {
-			return await implementationProvider.provideImplementation(textModel, position, CancellationToken.None) ?? [];
-		}));
-
-		return implementations.flat();
 	}
 });
