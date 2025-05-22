@@ -267,3 +267,6 @@ export interface IExtensionArg {
 	location: URI | undefined;
 	galleryLink: string | undefined;
 }
+
+
+

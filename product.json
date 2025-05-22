@@ -86,7 +86,7 @@
 			"name": "wso2-micro-integrator",
 			"version": "2.1.2",
 			"vsix": "extensions/vsix/micro-integrator-2.1.2.vsix",
-			"sha256": "e682fca0f8367f0cbfffeb80a9de0cbfda86ff0d893575ba746b4f2a6cce7dd5",
+			"sha256": "9c7c90c0ddb08c0d2dc1b0dc59955026ee61100e01dc39dd7147ed25693e80cb",
 			"metadata": {
 				"publisherId": {
 					"publisherName": "wso2-micro-integrator",
@@ -126,4 +126,6 @@
 		}
 
 	]
+
+
 }

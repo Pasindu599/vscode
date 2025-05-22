@@ -31,6 +31,8 @@ import { IExtensionFeatureTableRenderer, IRenderedData, ITableData, IRowData, IE
 import { Disposable } from '../../../base/common/lifecycle.js';
 import { MarkdownString } from '../../../base/common/htmlContent.js';
 
+
+
 export interface IUserFriendlyViewsContainerDescriptor {
 	id: string;
 	title: string;
